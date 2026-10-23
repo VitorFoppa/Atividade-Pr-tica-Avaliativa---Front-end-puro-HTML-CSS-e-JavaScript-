@@ -1,11 +1,169 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Diário local para registrar e consultar aplicações realizadas na lavoura.">
+  <title>AgroRegistro | Diário de Aplicações</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
-    
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#inicio" aria-label="AgroRegistro, início">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span class="brand-copy">
+          <strong>AgroRegistro</strong>
+          <small>DIÁRIO DE APLICAÇÕES</small>
+        </span>
+      </a>
+      <div class="header-note">
+        <span class="online-dot" aria-hidden="true"></span>
+        <span>Seus registros ficam neste navegador</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="inicio" class="page-container">
+    <section class="intro-section" aria-labelledby="page-title">
+      <div class="intro-copy">
+        <p class="eyebrow">GESTÃO DE CAMPO <span>•</span> HISTÓRICO</p>
+        <h1 id="page-title">Diário de aplicações</h1>
+        <p class="intro-description">Registre os tratamentos realizados e mantenha as informações da lavoura organizadas em um só lugar.</p>
+      </div>
+      <div class="date-chip">
+        <span class="date-chip-icon" aria-hidden="true">▦</span>
+        <span id="data-atual">Seu caderno de campo</span>
+      </div>
+    </section>
+
+    <section class="metrics-grid" aria-label="Resumo dos registros">
+      <article class="metric-card">
+        <div class="metric-topline"><span class="metric-label">Aplicações registradas</span><span class="metric-icon icon-green" aria-hidden="true">✓</span></div>
+        <p class="metric-value" id="total-aplicacoes">0</p>
+        <p class="metric-caption">No histórico completo</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-topline"><span class="metric-label">Neste mês</span><span class="metric-icon icon-gold" aria-hidden="true">◷</span></div>
+        <p class="metric-value" id="aplicacoes-mes">0</p>
+        <p class="metric-caption">Aplicações registradas</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-topline"><span class="metric-label">Talhões acompanhados</span><span class="metric-icon icon-blue" aria-hidden="true">⌖</span></div>
+        <p class="metric-value" id="total-talhoes">0</p>
+        <p class="metric-caption">Talhões distintos no histórico</p>
+      </article>
+    </section>
+
+    <div class="content-grid">
+      <section class="panel form-panel" aria-labelledby="form-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">NOVO REGISTRO</p>
+            <h2 id="form-title">Adicionar aplicação</h2>
+          </div>
+          <span class="heading-symbol" aria-hidden="true">＋</span>
+        </div>
+        <p class="panel-description">Preencha os dados do tratamento realizado na lavoura.</p>
+
+        <form id="form-aplicacao">
+          <input type="hidden" id="aplicacao-id" name="aplicacao-id">
+
+          <div class="form-field">
+            <label for="talhao">Talhão <span class="required-mark">*</span></label>
+            <input type="text" id="talhao" name="talhao" placeholder="Ex.: Talhão 04 – Gleba Norte" maxlength="80" required>
+          </div>
+
+          <div class="form-field">
+            <label for="produto">Produto aplicado <span class="required-mark">*</span></label>
+            <input type="text" id="produto" name="produto" placeholder="Nome comercial do produto" maxlength="100" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="dosagem">Dosagem <span class="required-mark">*</span></label>
+              <input type="number" id="dosagem" name="dosagem" placeholder="Ex.: 1,5" min="0.01" max="1000000" step="any" inputmode="decimal" required>
+              <small class="field-hint">Informe um valor maior que zero.</small>
+            </div>
+            <div class="form-field">
+              <label for="unidade">Unidade <span class="required-mark">*</span></label>
+              <select id="unidade" name="unidade" required>
+                <option value="L/ha">L/ha</option>
+                <option value="mL/ha">mL/ha</option>
+                <option value="kg/ha">kg/ha</option>
+                <option value="g/ha">g/ha</option>
+                <option value="L/100 L">L/100 L</option>
+                <option value="mL/100 L">mL/100 L</option>
+                <option value="g/100 L">g/100 L</option>
+                <option value="kg/100 L">kg/100 L</option>
+                <option value="Outra">Outra</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="data-aplicacao">Data da aplicação <span class="required-mark">*</span></label>
+            <input type="date" id="data-aplicacao" name="data-aplicacao" required>
+          </div>
+
+          <div class="form-field">
+            <label for="alvo">Alvo / finalidade <span class="optional-label">Opcional</span></label>
+            <input type="text" id="alvo" name="alvo" placeholder="Ex.: registro do alvo observado" maxlength="120">
+          </div>
+
+          <div class="form-field">
+            <label for="observacoes">Observações <span class="optional-label">Opcional</span></label>
+            <textarea id="observacoes" name="observacoes" rows="3" maxlength="600" placeholder="Condições observadas ou outras anotações..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="button button-primary" id="botao-salvar" type="submit"><span aria-hidden="true">＋</span> Salvar aplicação</button>
+            <button class="button button-ghost hidden" id="botao-cancelar" type="button">Cancelar edição</button>
+          </div>
+          <p class="form-footnote"><span aria-hidden="true">ⓘ</span> Os campos com * são obrigatórios.</p>
+        </form>
+      </section>
+
+      <section class="panel records-panel" aria-labelledby="records-title">
+        <div class="records-heading">
+          <div>
+            <p class="eyebrow">SEU HISTÓRICO</p>
+            <h2 id="records-title">Aplicações registradas <span class="count-pill" id="contador-registros">0</span></h2>
+          </div>
+        </div>
+        <div class="toolbar">
+          <label class="search-box" for="busca">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" id="busca" placeholder="Buscar talhão ou produto..." autocomplete="off">
+          </label>
+          <label class="filter-label" for="filtro-periodo">Período
+            <select id="filtro-periodo">
+              <option value="todos">Todo o histórico</option>
+              <option value="mes">Este mês</option>
+            </select>
+          </label>
+        </div>
+        <p class="results-summary" id="resumo-resultados" aria-live="polite">Mostrando 0 registros</p>
+        <div id="lista-aplicacoes" class="records-list" aria-live="polite"></div>
+        <div id="estado-vazio" class="empty-state">
+          <div class="empty-illustration" aria-hidden="true">▤</div>
+          <h3>Nenhuma aplicação por aqui</h3>
+          <p>Adicione seu primeiro registro no formulário para começar seu histórico de campo.</p>
+        </div>
+      </section>
+    </div>
+
+    <p id="mensagem-feedback" class="feedback" role="status" aria-live="polite"></p>
+    <section class="privacy-note" aria-label="Aviso sobre armazenamento">
+      <span class="privacy-icon" aria-hidden="true">⌂</span>
+      <p><strong>Armazenamento local</strong><br>Os registros ficam salvos no <code>localStorage</code> deste navegador. Eles não são enviados para um servidor e não acompanham você automaticamente em outro dispositivo.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>AgroRegistro <span>•</span> Projeto acadêmico de Desenvolvimento Web I</p>
+    <p>HTML <span>·</span> CSS <span>·</span> JavaScript <span>·</span> localStorage</p>
+  </footer>
 </body>
 </html>
