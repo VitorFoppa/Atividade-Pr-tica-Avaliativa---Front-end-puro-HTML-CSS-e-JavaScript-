@@ -155,9 +155,27 @@
     </div>
 
     <p id="mensagem-feedback" class="feedback" role="status" aria-live="polite"></p>
-    <section class="privacy-note" aria-label="Aviso sobre armazenamento">
-      <span class="privacy-icon" aria-hidden="true">⌂</span>
-      <p><strong>Armazenamento local</strong><br>Os registros ficam salvos no <code>localStorage</code> deste navegador. Eles não são enviados para um servidor e não acompanham você automaticamente em outro dispositivo.</p>
+    <section class="weather-card" id="clima" aria-label="Previsão do tempo de hoje" aria-live="polite">
+    <div class="weather-main">
+        <span class="weather-icon" id="clima-icone" aria-hidden="true">🌡️</span>
+        <div>
+        <p class="weather-place" id="clima-local">Buscando sua localização…</p>
+        <h2 class="weather-title">Clima de hoje</h2>
+        <p class="weather-temp"><span id="clima-temp">--</span><small id="clima-desc"></small></p>
+        </div>
+    </div>
+
+    <dl class="weather-details">
+        <div><dt>Mín / Máx</dt><dd id="clima-minmax">--</dd></div>
+        <div><dt>Sensação</dt><dd id="clima-sensacao">--</dd></div>
+        <div><dt>Umidade</dt><dd id="clima-umidade">--</dd></div>
+        <div><dt>Vento</dt><dd id="clima-vento">--</dd></div>
+        <div><dt>Chuva</dt><dd id="clima-chuva">--</dd></div>
+    </dl>
+
+    <div class="weather-side">
+        <button class="button button-ghost" id="clima-atualizar" type="button">Atualizar</button>
+    </div>
     </section>
   </main>
 

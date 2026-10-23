@@ -318,6 +318,115 @@ window.addEventListener('storage', (evento) => {
   renderizar();
 });
 
+/* ---------- Clima de hoje (APIs REST via fetch) ----------
+   1) ipwho.is (reserva: ipapi.co) -> localização aproximada pelo IP
+   2) Open-Meteo                   -> previsão do dia para essa localização
+   Nenhuma das duas exige chave de API. */
+const CHAVE_CLIMA = 'agroregistro:clima';
+const VALIDADE_CLIMA = 30 * 60 * 1000; // 30 min em cache, para poupar as APIs
+const CODIGOS_CLIMA = [
+  [[0], 'Céu limpo', '☀️'],
+  [[1, 2], 'Parcialmente nublado', '🌤️'],
+  [[3], 'Nublado', '☁️'],
+  [[45, 48], 'Neblina', '🌫️'],
+  [[51, 53, 55, 56, 57], 'Garoa', '🌦️'],
+  [[61, 63, 65, 66, 67, 80, 81, 82], 'Chuva', '🌧️'],
+  [[71, 73, 75, 77, 85, 86], 'Neve', '❄️'],
+  [[95, 96, 99], 'Tempestade', '⛈️'],
+];
+
+const climaCard = document.querySelector('#clima');
+const climaBotao = document.querySelector('#clima-atualizar');
+const climaEl = (nome) => document.querySelector(`#clima-${nome}`);
+
+async function buscarJSON(url) {
+  const resposta = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+  return resposta.json();
+}
+
+async function obterLocalizacao() {
+  try {
+    const d = await buscarJSON('https://ipwho.is/');
+    if (d.success === false) throw new Error(d.message);
+    return { cidade: d.city, estado: d.region, lat: d.latitude, lon: d.longitude };
+  } catch (erro) {
+    const d = await buscarJSON('https://ipapi.co/json/');
+    if (d.error) throw new Error(d.reason);
+    return { cidade: d.city, estado: d.region, lat: d.latitude, lon: d.longitude };
+  }
+}
+
+function obterPrevisao({ lat, lon }) {
+  const parametros = new URLSearchParams({
+    latitude: lat,
+    longitude: lon,
+    current: 'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code',
+    daily: 'temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+    timezone: 'auto',
+    forecast_days: 1,
+  });
+  return buscarJSON(`https://api.open-meteo.com/v1/forecast?${parametros}`);
+}
+
+function lerCacheClima() {
+  try {
+    const cache = JSON.parse(localStorage.getItem(CHAVE_CLIMA));
+    return cache && Date.now() - cache.quando < VALIDADE_CLIMA ? cache.dados : null;
+  } catch (erro) {
+    return null;
+  }
+}
+
+function mostrarClima({ local, previsao }) {
+  const atual = previsao.current;
+  const dia = previsao.daily;
+  const [, descricao, icone] = CODIGOS_CLIMA.find(([codigos]) => codigos.includes(atual.weather_code)) ?? [null, 'Condição indisponível', '🌡️'];
+  const graus = (valor) => `${Math.round(valor)}°C`;
+
+  climaEl('local').textContent = [local.cidade, local.estado].filter(Boolean).join(' – ') || 'Local aproximado';
+  climaEl('icone').textContent = icone;
+  climaEl('temp').textContent = graus(atual.temperature_2m);
+  climaEl('desc').textContent = descricao;
+  climaEl('minmax').textContent = `${graus(dia.temperature_2m_min[0])} / ${graus(dia.temperature_2m_max[0])}`;
+  climaEl('sensacao').textContent = graus(atual.apparent_temperature);
+  climaEl('umidade').textContent = `${Math.round(atual.relative_humidity_2m)}%`;
+  climaEl('vento').textContent = `${Math.round(atual.wind_speed_10m)} km/h`;
+  climaEl('chuva').textContent = `${dia.precipitation_probability_max[0] ?? 0}%`;
+}
+
+function mostrarErroClima() {
+  climaEl('local').textContent = 'Previsão indisponível';
+  climaEl('icone').textContent = '🌡️';
+  climaEl('temp').textContent = '--';
+  climaEl('desc').textContent = 'Verifique a conexão ou desative bloqueadores de anúncio e tente de novo.';
+  ['minmax', 'sensacao', 'umidade', 'vento', 'chuva'].forEach((nome) => (climaEl(nome).textContent = '--'));
+}
+
+async function carregarClima(forcar = false) {
+  climaCard.classList.add('is-loading');
+  climaBotao.disabled = true;
+
+  try {
+    let dados = forcar ? null : lerCacheClima();
+    if (!dados) {
+      const local = await obterLocalizacao();
+      dados = { local, previsao: await obterPrevisao(local) };
+      try {
+        localStorage.setItem(CHAVE_CLIMA, JSON.stringify({ quando: Date.now(), dados }));
+      } catch (erro) { /* sem cache, mas a previsão continua sendo exibida */ }
+    }
+    mostrarClima(dados);
+  } catch (erro) {
+    mostrarErroClima();
+  } finally {
+    climaCard.classList.remove('is-loading');
+    climaBotao.disabled = false;
+  }
+}
+
+climaBotao.addEventListener('click', () => carregarClima(true));
+
 /* ---------- Inicialização ---------- */
 function iniciar() {
   const hoje = hojeISO();
@@ -329,6 +438,7 @@ function iniciar() {
 
   aplicacoes = carregarAplicacoes();
   renderizar();
+  carregarClima();
 }
 
 iniciar();
