@@ -11,6 +11,8 @@ const TEXTOS_VAZIO = {
   semRegistros: ['Nenhuma aplicação por aqui', 'Adicione seu primeiro registro no formulário para começar seu histórico de campo.'],
   semResultados: ['Nenhum resultado encontrado', 'Tente outro termo de busca ou altere o período selecionado.'],
 };
+
+//formata o numero na região pt-BR. Até 4 numeros.
 const formatoNumero = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 });
 
 /* ---------- Elementos do DOM ---------- */
@@ -46,7 +48,10 @@ let idEmEdicao = null;
 let timerFeedback;
 
 /* ---------- Utilitários ---------- */
+//permite ao JavaScript verificar uma condição de CSS do navegador. Preferencia do usuario por animações reduzidas no navegador.
 const prefereMovimentoReduzido = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+//garante que a string tenha 2 caracteres, se não tem preenche com 0. ex: 2,40.
 const doisDigitos = (n) => String(n).padStart(2, '0');
 
 // Data local no formato AAAA-MM-DD (evita o deslocamento de fuso de toISOString)
@@ -58,9 +63,12 @@ function hojeISO() {
 // Ignora acentos, maiúsculas e espaços repetidos (busca e contagem de talhões)
 function normalizar(texto) {
   return String(texto)
+    //O modo NFD separa muitos caracteres acentuados em duas partes: a letra base e o sinal.
     .normalize('NFD')
+    //remove os acentos.
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+    //Substitui sequências de espaços em branco por apenas um espaço.
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -431,7 +439,7 @@ climaBotao.addEventListener('click', () => carregarClima(true));
 function iniciar() {
   const hoje = hojeISO();
   campos.data.value = hoje;
-  campos.data.max = hoje; // não permite registrar aplicação em data futura
+  campos.data.max = hoje; // não permite registrar aplicação em data futura. REGRA DE NEGOCIO.
 
   const dataLonga = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
   document.querySelector('#data-atual').textContent = dataLonga.charAt(0).toUpperCase() + dataLonga.slice(1);
